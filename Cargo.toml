@@ -1,0 +1,64 @@
+[package]
+name = "audio-converter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+symphonia = { version = "0.5", features = ["all"] }
+hound = "3.5"
+audio_sample = { version = "2.0", features = ["ndarray"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"
+rstest = "0.18"
+criterion = "0.5"
+tokio = { version = "1.0", features = ["full"] }
+test-case = "3.0"
+
+# 性能优化配置
+[profile.release]
+opt-level = 3           # 最高优化等级
+debug = false           # 禁用调试信息以减小二进制大小
+strip = true            # 去除符号表
+lto = "fat"             # 启用完整链接时优化
+codegen-units = 1       # 使用单个代码生成单元以获得最佳优化
+panic = "abort"         # 使用 abort 替代 unwind 以提高性能
+
+[profile.bench]
+opt-level = 3           # 基准测试使用最高优化
+debug = false
+lto = "fat"
+codegen-units = 1
+
+# 测试专用的 Release 配置
+[profile.test]
+opt-level = 3           # 测试时也使用高优化
+debug = true            # 保留调试信息以便测试失败时调试
+lto = "thin"            # 使用轻量级 LTO 平衡编译时间和性能
+
+# 极限优化配置（可能增加编译时间）
+[profile.release-max]
+inherits = "release"
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[[bench]]
+name = "audio_processing"
+harness = false
+
+[lib]
+name = "audio_converter"
+path = "src/lib.rs"
+
+[[bin]]
+name = "audio-converter"
+path = "src/main.rs"
